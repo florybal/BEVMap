@@ -1,9 +1,9 @@
 import torch 
 from nuscenes.nuscenes import NuScenes
 import mmcv
-from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
-                         wrap_fp16_model)
-from mmcv import Config, DictAction
+from mmengine.dist import get_dist_info, init_dist
+from mmcv.runner import (load_checkpoint, wrap_fp16_model)
+from mmengine import Config, DictAction
 import argparse
 from mmdet3d.models import build_model
 import torchvision

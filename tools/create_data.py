@@ -6,6 +6,7 @@ from tools.data_converter import indoor_converter as indoor
 from tools.data_converter import kitti_converter as kitti
 from tools.data_converter import lyft_converter as lyft_converter
 from tools.data_converter import nuscenes_converter as nuscenes_converter
+from tools.data_converter import bevlog_converter as bevlog_converter
 from tools.data_converter.create_gt_database import create_groundtruth_database
 
 
@@ -285,3 +286,10 @@ if __name__ == '__main__':
             info_prefix=args.extra_tag,
             out_dir=args.out_dir,
             workers=args.workers)
+    elif args.dataset == 'bevlog':
+        # Minimal BEVLOG conversion: create nuscenes-style info pkls.
+        bevlog_converter.create_bevlog_infos(
+            root_path=args.root_path,
+            info_prefix='nuscenes',
+            version=args.version,
+            max_sweeps=args.max_sweeps)

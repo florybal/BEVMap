@@ -8,8 +8,8 @@ import os
 import time
 import torch
 import warnings
-from mmcv import Config, DictAction
-from mmcv.runner import get_dist_info, init_dist
+from mmengine import Config, DictAction
+from mmengine.dist import get_dist_info, init_dist
 from os import path as osp
 
 from mmdet import __version__ as mmdet_version

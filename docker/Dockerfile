@@ -1,26 +1,38 @@
-ARG PYTORCH="1.6.0"
-ARG CUDA="10.1"
-ARG CUDNN="7"
+FROM pytorch/pytorch:2.8.0-cuda12.9-cudnn9-devel
 
-FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
-
-ENV TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0+PTX"
+ENV TORCH_CUDA_ARCH_LIST="8.9"
 ENV TORCH_NVCC_FLAGS="-Xfatbin -compress-all"
 ENV CMAKE_PREFIX_PATH="$(dirname $(which conda))/../"
+ENV FORCE_CUDA="1"
 
-RUN apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 \
-    && apt-get clean \
+WORKDIR /workspace
+
+RUN rm -f /etc/apt/sources.list.d/cuda* /etc/apt/sources.list.d/nvidia* || true \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC 2>/dev/null || true \
+    && apt-get update -y || apt-get update -y --allow-releaseinfo-change \
+    && apt-get install -y --no-install-recommends \
+        git \
+        ffmpeg \
+        libsm6 \
+        libxext6 \
+        libxrender-dev \
+        libgl1-mesa-glx \
+        libglib2.0-0 \
+        build-essential \
+        python3-dev \
+        ninja-build \
+        ca-certificates \
+        wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Install MMCV, MMDetection and MMSegmentation
-RUN pip install mmcv-full==1.3.8 -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.6.0/index.html
-RUN pip install mmdet==2.17.0
-RUN pip install mmsegmentation==0.18.0
+COPY . /workspace
 
-# Install MMDetection3D
-RUN conda clean --all
-RUN git clone https://github.com/open-mmlab/mmdetection3d.git /mmdetection3d
-WORKDIR /mmdetection3d
-ENV FORCE_CUDA="1"
-RUN pip install -r requirements/build.txt
-RUN pip install --no-cache-dir -e .
+RUN pip install -U pip wheel setuptools==79.0.1 \
+ && pip install torch==2.8.0+cu129 torchvision==0.23.0+cu129 torchaudio==2.8.0+cu129 -f https://download.pytorch.org/whl/torch_stable.html \
+ && pip install --no-build-isolation mmcv==2.0.0 \
+ && pip install mmengine==0.10.7 \
+ && pip install mmdet==3.0.0 mmsegmentation==1.0.0 \
+ && pip install -r requirements/runtime.txt \
+ && pip install -e . --no-build-isolation
+
+CMD ["/bin/bash"]
